@@ -1,0 +1,53 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:14
+    container_name: postgres_14_db
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    restart: always
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+
+  bot:
+    build: ./
+    command: python3 main.py
+    depends_on:
+      - db
+      - redis
+    restart: always
+    env_file:
+      - .env
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+
+
+volumes:
+  postgres_data:
+  redis_data:
