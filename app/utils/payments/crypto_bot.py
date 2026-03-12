@@ -75,7 +75,7 @@ async def finalize_crypto_payment(callback: CallbackQuery, bot: Bot, tariff_id):
 
     else:
         end = user.end_date if isinstance(user.end_date, datetime) else datetime.fromisoformat(user.end_date)
-        new_end = end + relativedelta(days=tariff.month_count)
+        new_end = end + relativedelta(months=tariff.month_count)
         await update_subscription_end_date(user_id, str(new_end))
         await callback.message.answer(
             f"<b>Ваша подписка была продлена до {new_end.strftime('%d.%m.%Y')}</b>",
